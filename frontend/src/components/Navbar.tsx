@@ -35,7 +35,7 @@ export default function Navbar() {
         <div className="flex gap-3">
           <Link
             href="/login"
-            className="rounded-lg border border-slate-300 px-4 py-2 font-medium transition hover:bg-slate-100"
+            className="rounded-lg border border-slate-300 px-4 py-2 font-medium transition hover:bg-slate-100 bg-slate-50 text-slate-700"
           >
             Login
           </Link>
