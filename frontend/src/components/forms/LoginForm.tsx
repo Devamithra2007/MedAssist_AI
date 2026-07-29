@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, LogIn, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
+import { authStorage } from "@/lib/authStorage";
 import { loginSchema, LoginFormData } from "@/lib/validators/auth";
 import { loginUser } from "@/services/auth";
 
@@ -27,10 +27,8 @@ export default function LoginForm() {
 
     try {
       const response = await loginUser(data);
-
-      localStorage.setItem("token", response.access_token);
-      localStorage.setItem("role", response.role);
-
+      authStorage.saveToken(response.access_token);
+      authStorage.saveRole(response.role);
       toast.success("Login successful!");
 
       router.push("/dashboard");
