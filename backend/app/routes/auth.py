@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas import UserCreate, UserResponse, UserLogin, Token
 from app.security import hash_password, verify_password
 from app.auth_handler import create_access_token
-from app.database import SessionLocal
+from app.database import get_db
 from app.models import User
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -13,14 +13,6 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-
-# Database Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post("/register", response_model=UserResponse)
