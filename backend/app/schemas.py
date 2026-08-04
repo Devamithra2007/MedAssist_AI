@@ -64,8 +64,13 @@ class PatientProfileResponse(PatientProfileBase):
     id: int
     user_id: int
 
+    full_name: str
+    email: EmailStr
+    role: str
+
     class Config:
         from_attributes = True
+
 class SymptomBase(BaseModel):
     fever: str | None = None
     cough: str | None = None

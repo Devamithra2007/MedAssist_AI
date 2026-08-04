@@ -30,8 +30,26 @@ export default function LoginForm() {
       authStorage.saveToken(response.access_token);
       authStorage.saveRole(response.role);
       toast.success("Login successful!");
+console.log(response);
+console.log(response.role);
+const role = response.role.toLowerCase();
 
-      router.push("/dashboard");
+switch (role) {
+  case "doctor":
+    router.push("/doctor/dashboard");
+    break;
+
+  case "admin":
+    router.push("/admin/dashboard");
+    break;
+
+  case "patient":
+    router.push("/dashboard");
+    break;
+
+  default:
+    router.push("/dashboard");
+}
     } catch (error: any) {
       toast.error(
         error?.response?.data?.detail || "Invalid email or password"

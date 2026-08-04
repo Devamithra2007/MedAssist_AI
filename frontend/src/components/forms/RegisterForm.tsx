@@ -97,10 +97,24 @@ export default function RegisterForm() {
           </p>
         </div>
 
-        <input
-          type="hidden"
-          {...register("role")}
-        />
+        <div>
+  <label className="block mb-2 font-medium">
+    Select Role
+  </label>
+
+  <select
+    {...register("role")}
+    className="w-full border rounded-lg px-4 py-3"
+  >
+    <option value="patient">Patient</option>
+    <option value="doctor">Doctor</option>
+    <option value="admin">Admin</option>
+  </select>
+
+  <p className="text-red-500 text-sm">
+    {errors.role?.message}
+  </p>
+</div>
 
         <button
           type="submit"

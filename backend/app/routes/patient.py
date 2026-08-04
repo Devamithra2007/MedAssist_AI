@@ -100,7 +100,30 @@ def get_profile(
             detail="Profile not found"
         )
 
-    return profile
+    return {
+    "id": profile.id,
+    "user_id": profile.user_id,
+
+    "full_name": user.full_name,
+    "email": user.email,
+    "role": user.role,
+
+    "phone": profile.phone,
+    "date_of_birth": profile.date_of_birth,
+    "gender": profile.gender,
+    "blood_group": profile.blood_group,
+
+    "height": profile.height,
+    "weight": profile.weight,
+
+    "address": profile.address,
+
+    "emergency_contact": profile.emergency_contact,
+
+    "allergies": profile.allergies,
+
+    "medical_history": profile.medical_history,
+}
 
 
 @router.put(
@@ -141,4 +164,27 @@ def update_profile(
     db.commit()
     db.refresh(profile)
 
-    return profile
+    return {
+    "id": profile.id,
+    "user_id": profile.user_id,
+
+    "full_name": user.full_name,
+    "email": user.email,
+    "role": user.role,
+
+    "phone": profile.phone,
+    "date_of_birth": profile.date_of_birth,
+    "gender": profile.gender,
+    "blood_group": profile.blood_group,
+
+    "height": profile.height,
+    "weight": profile.weight,
+
+    "address": profile.address,
+
+    "emergency_contact": profile.emergency_contact,
+
+    "allergies": profile.allergies,
+
+    "medical_history": profile.medical_history,
+}

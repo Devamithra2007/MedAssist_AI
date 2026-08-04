@@ -8,8 +8,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.database import Base
 
+
+# =====================================
+# User Model
+# =====================================
 
 class User(Base):
     __tablename__ = "users"
@@ -17,16 +22,16 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     full_name = Column(String, nullable=False)
-
     email = Column(String, unique=True, nullable=False)
-
     password = Column(String, nullable=False)
-
     role = Column(String, nullable=False)
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
 
-    # One user -> One patient profile
+    # Relationships
     patient_profile = relationship(
         "PatientProfile",
         back_populates="user",
@@ -34,6 +39,22 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
+    symptoms = relationship(
+        "Symptom",
+        back_populates="patient",
+        cascade="all, delete-orphan",
+    )
+
+    predictions = relationship(
+        "Prediction",
+        back_populates="patient",
+        cascade="all, delete-orphan",
+    )
+
+
+# =====================================
+# Patient Profile
+# =====================================
 
 class PatientProfile(Base):
     __tablename__ = "patient_profiles"
@@ -78,6 +99,12 @@ class PatientProfile(Base):
         "User",
         back_populates="patient_profile",
     )
+
+
+# =====================================
+# Symptoms
+# =====================================
+
 class Symptom(Base):
     __tablename__ = "symptoms"
 
@@ -86,7 +113,7 @@ class Symptom(Base):
     patient_id = Column(
         Integer,
         ForeignKey("users.id"),
-        nullable=False
+        nullable=False,
     )
 
     fever = Column(String(20))
@@ -105,10 +132,24 @@ class Symptom(Base):
 
     created_at = Column(
         DateTime(timezone=True),
-        server_default=func.now()
+        server_default=func.now(),
     )
 
-    patient = relationship("User")
+    patient = relationship(
+        "User",
+        back_populates="symptoms",
+    )
+
+    predictions = relationship(
+        "Prediction",
+        back_populates="symptom",
+        cascade="all, delete-orphan",
+    )
+
+
+# =====================================
+# Prediction
+# =====================================
 
 class Prediction(Base):
     __tablename__ = "predictions"
@@ -118,27 +159,31 @@ class Prediction(Base):
     patient_id = Column(
         Integer,
         ForeignKey("users.id"),
-        nullable=False
+        nullable=False,
     )
 
     symptom_id = Column(
         Integer,
         ForeignKey("symptoms.id"),
-        nullable=False
+        nullable=False,
     )
 
     predicted_disease = Column(String(100))
-
     confidence = Column(String(20))
-
     risk_level = Column(String(20))
-
     recommendation = Column(Text)
 
     created_at = Column(
         DateTime(timezone=True),
-        server_default=func.now()
+        server_default=func.now(),
     )
 
-    patient = relationship("User")
-    symptom = relationship("Symptom")
+    patient = relationship(
+        "User",
+        back_populates="predictions",
+    )
+
+    symptom = relationship(
+        "Symptom",
+        back_populates="predictions",
+    )
