@@ -129,3 +129,26 @@ class PredictionResponse(PredictionBase):
 
     class Config:
         from_attributes = True
+
+# -------------------------
+# Doctor Patient Assignment
+# -------------------------
+
+class AssignmentCreate(BaseModel):
+    doctor_id: int
+    patient_id: int
+
+
+class AssignmentResponse(BaseModel):
+    id: int
+    doctor_id: int
+    patient_id: int
+
+    class Config:
+        from_attributes = True
+
+class AdminDashboardResponse(BaseModel):
+    total_doctors: int
+    total_patients: int
+    total_predictions: int
+    total_assignments: int

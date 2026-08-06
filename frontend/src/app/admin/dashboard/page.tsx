@@ -4,16 +4,8 @@ import { useEffect, useState } from "react";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import WelcomeBanner from "@/components/dashboard/welcomeBanner";
-import StatCard from "@/components/dashboard/StatCard";
 
 import { getAdminDashboard } from "@/services/admin";
-
-import {
-  Users,
-  UserRound,
-  Brain,
-  Link2,
-} from "lucide-react";
 
 export default function AdminDashboardPage() {
   const [dashboard, setDashboard] = useState<any>(null);
@@ -58,43 +50,13 @@ export default function AdminDashboardPage() {
 
   return (
     <DashboardLayout>
-      {/* Welcome Banner */}
+
       <WelcomeBanner
         name="Administrator"
         role="Admin"
         message="Manage doctors, patients and the MedAssist AI platform."
       />
 
-      {/* Statistics */}
-      <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Doctors"
-          value={dashboard.total_doctors}
-          icon={UserRound}
-          color="bg-blue-600"
-        />
-
-        <StatCard
-          title="Patients"
-          value={dashboard.total_patients}
-          icon={Users}
-          color="bg-green-600"
-        />
-
-        <StatCard
-          title="Predictions"
-          value={dashboard.total_predictions}
-          icon={Brain}
-          color="bg-orange-500"
-        />
-
-        <StatCard
-          title="Assignments"
-          value={dashboard.total_assignments}
-          icon={Link2}
-          color="bg-purple-600"
-        />
-      </div>
     </DashboardLayout>
   );
 }

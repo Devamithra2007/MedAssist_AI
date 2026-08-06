@@ -1,56 +1,41 @@
 import api from "./api";
 
-const token = () => localStorage.getItem("token");
-
 export const getDoctorSummary = async () => {
-  const res = await api.get("/doctor/summary", {
-    headers: {
-      Authorization: `Bearer ${token()}`,
-    },
-  });
-
-  return res.data;
+  const response = await api.get("/doctor/summary");
+  return response.data;
 };
 
-export const getPatients = async () => {
-  const res = await api.get("/doctor/patients", {
-    headers: {
-      Authorization: `Bearer ${token()}`,
-    },
-  });
-
-  return res.data;
+export const getAssignedPatients = async () => {
+  const response = await api.get("/doctor/patients");
+  return response.data;
 };
 
-export const getPatientProfile = async (id: number) => {
-  console.log("TOKEN:", token());
+export const getPatientProfile = async (
+  patientId: number
+) => {
+  const response = await api.get(
+    `/doctor/patient/${patientId}`
+  );
 
-  const res = await api.get(`/doctor/patient/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token()}`,
-    },
-  });
-
-  return res.data;
+  return response.data;
 };
 
-export const getPatientSymptoms = async (id: number) => {
-  const res = await api.get(`/doctor/patient/${id}/symptoms`, {
-    headers: {
-      Authorization: `Bearer ${token()}`,
-    },
-  });
+export const getPatientSymptoms = async (
+  patientId: number
+) => {
+  const response = await api.get(
+    `/doctor/patient/${patientId}/symptoms`
+  );
 
-  return res.data;
+  return response.data;
 };
 
-export const getPatientPredictions = async (id: number) => {
-  const res = await api.get(`/doctor/patient/${id}/predictions`, {
-    headers: {
-      Authorization: `Bearer ${token()}`,
-    },
-  });
+export const getPatientPredictions = async (
+  patientId: number
+) => {
+  const response = await api.get(
+    `/doctor/patient/${patientId}/predictions`
+  );
 
-  return res.data;
+  return response.data;
 };
-

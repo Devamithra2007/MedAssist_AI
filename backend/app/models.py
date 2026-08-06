@@ -187,3 +187,43 @@ class Prediction(Base):
         "Symptom",
         back_populates="predictions",
     )
+# =====================================
+# Doctor Patient Assignment
+# =====================================
+
+class DoctorPatientAssignment(Base):
+    __tablename__ = "doctor_patient_assignments"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+
+    doctor_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    patient_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False,
+        unique=True
+    )
+
+    assigned_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    doctor = relationship(
+        "User",
+        foreign_keys=[doctor_id]
+    )
+
+    patient = relationship(
+        "User",
+        foreign_keys=[patient_id]
+    )

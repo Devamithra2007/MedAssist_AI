@@ -3,8 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user
-from app.models import User, PatientProfile, Symptom, Prediction
-
+from app.models import (
+    User,
+    PatientProfile,
+    Symptom,
+    Prediction,
+    DoctorPatientAssignment,
+)
 router = APIRouter(
     prefix="/doctor",
     tags=["Doctor"]
@@ -33,15 +38,39 @@ def doctor_dashboard(
 @router.get("/patients")
 def get_patients(
     current_user=Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     verify_doctor(current_user)
 
-    return db.query(User).filter(
-        User.role == "Patient"
+    doctor = db.query(User).filter(
+        User.email == current_user["sub"]
+    ).first()
+
+    if not doctor:
+        raise HTTPException(
+            status_code=404,
+            detail="Doctor not found"
+        )
+
+    assignments = db.query(
+        DoctorPatientAssignment
+    ).filter(
+        DoctorPatientAssignment.doctor_id == doctor.id
     ).all()
 
+    patient_ids = [
+        assignment.patient_id
+        for assignment in assignments
+    ]
 
+    if not patient_ids:
+        return []
+
+    patients = db.query(User).filter(
+        User.id.in_(patient_ids)
+    ).all()
+
+    return patients
 @router.get("/patient/{patient_id}")
 def patient_profile(
     patient_id: int,
@@ -112,18 +141,29 @@ def doctor_summary(
 ):
     verify_doctor(current_user)
 
-    total_patients = db.query(User).filter(
-        User.role == "Patient"
-    ).count()
+    doctor = db.query(User).filter(
+        User.email == current_user["sub"]
+    ).first()
+
+    assigned_patient_ids = [
+        assignment.patient_id
+        for assignment in db.query(
+            DoctorPatientAssignment
+        ).filter(
+            DoctorPatientAssignment.doctor_id == doctor.id
+        ).all()
+]
+
+    total_patients = len(assigned_patient_ids)
 
     total_predictions = db.query(Prediction).count()
 
     total_reports = db.query(PatientProfile).count()
 
     high_risk = db.query(Prediction).filter(
+        Prediction.patient_id.in_(assigned_patient_ids),
         Prediction.risk_level == "High"
     ).count()
-
     return {
         "total_patients": total_patients,
         "total_predictions": total_predictions,

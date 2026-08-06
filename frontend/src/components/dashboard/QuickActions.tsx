@@ -1,25 +1,18 @@
-import {
-  Stethoscope,
-  FileText,
-  User,
-} from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
-const actions = [
-  {
-    title: "Analyze Symptoms",
-    icon: Stethoscope,
-  },
-  {
-    title: "View Reports",
-    icon: FileText,
-  },
-  {
-    title: "Update Profile",
-    icon: User,
-  },
-];
+interface QuickAction {
+  title: string;
+  icon: LucideIcon;
+  onClick?: () => void;
+}
 
-export default function QuickActions() {
+interface QuickActionsProps {
+  actions: QuickAction[];
+}
+
+export default function QuickActions({
+  actions,
+}: QuickActionsProps) {
   return (
     <div className="rounded-2xl bg-white p-6 shadow-md">
       <h2 className="mb-6 text-xl font-bold">
@@ -33,14 +26,26 @@ export default function QuickActions() {
           return (
             <button
               key={action.title}
-              className="rounded-xl border p-6 hover:bg-sky-50 transition"
+              onClick={action.onClick}
+              className="
+                rounded-xl
+                border
+                p-6
+                transition-all
+                duration-300
+                hover:bg-sky-50
+                hover:shadow-md
+                hover:-translate-y-1
+              "
             >
               <Icon
                 size={32}
                 className="mx-auto mb-3 text-sky-700"
               />
 
-              <p>{action.title}</p>
+              <p className="font-medium">
+                {action.title}
+              </p>
             </button>
           );
         })}

@@ -1,18 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import WelcomeBanner from "@/components/dashboard/welcomeBanner";
+import StatsGrid from "@/components/dashboard/StatsGrid";
+
+import PatientCard from "@/components/doctor/PatientCard";
+
 import {
   getDoctorSummary,
-  getPatients,
+  getAssignedPatients,
 } from "@/services/doctor";
 
-export default function DoctorDashboard() {
-    const router = useRouter();
+export default function DoctorDashboardPage() {
+
   const [summary, setSummary] = useState<any>(null);
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-    
 
   useEffect(() => {
     loadDashboard();
@@ -20,13 +25,13 @@ export default function DoctorDashboard() {
 
   const loadDashboard = async () => {
     try {
-      const [summaryData, patientData] = await Promise.all([
-        getDoctorSummary(),
-        getPatients(),
-      ]);
+
+      const summaryData = await getDoctorSummary();
+      const patientData = await getAssignedPatients();
 
       setSummary(summaryData);
       setPatients(patientData);
+
     } catch (error) {
       console.error(error);
     } finally {
@@ -36,113 +41,63 @@ export default function DoctorDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-xl font-bold">
-        Loading Doctor Dashboard...
-      </div>
+      <DashboardLayout>
+        <div className="flex h-full items-center justify-center text-xl">
+          Loading Dashboard...
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-8">
+    <DashboardLayout>
 
-      <h1 className="text-4xl font-bold text-blue-700 mb-8">
-        Doctor Dashboard
-      </h1>
+      <WelcomeBanner
+        name="Doctor"
+        role="Doctor"
+        message="Manage your assigned patients and review AI predictions."
+      />
 
-      {/* Dashboard Cards */}
+      <div className="mt-8">
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-gray-500">Patients</h3>
-          <p className="text-4xl font-bold text-blue-600">
-            {summary.total_patients}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-gray-500">Predictions</h3>
-          <p className="text-4xl font-bold text-green-600">
-            {summary.total_predictions}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-gray-500">Reports</h3>
-          <p className="text-4xl font-bold text-purple-600">
-            {summary.total_reports}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-gray-500">High Risk</h3>
-          <p className="text-4xl font-bold text-red-600">
-            {summary.high_risk_patients}
-          </p>
-        </div>
+        <StatsGrid
+          role="doctor"
+          summary={summary}
+        />
 
       </div>
 
-      {/* Patient Table */}
+      <div className="mt-10">
 
-      <div className="bg-white rounded-xl shadow-lg p-6">
-
-        <h2 className="text-2xl font-bold mb-6">
-          Patients
+        <h2 className="mb-6 text-2xl font-bold">
+          My Patients
         </h2>
 
-        <div className="overflow-x-auto">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
 
-          <table className="w-full">
+          {patients.length === 0 ? (
 
-            <thead className="bg-blue-600 text-white">
+            <div className="rounded-xl bg-white p-8 shadow text-center text-gray-500">
+              No patients assigned yet.
+            </div>
 
-              <tr>
-  <th className="p-3 text-left">ID</th>
-  <th className="p-3 text-left">Name</th>
-  <th className="p-3 text-left">Email</th>
-  <th className="p-3 text-left">Role</th>
-  <th className="p-3 text-left">Action</th>
-</tr>
+          ) : (
 
-            </thead>
+            patients.map((patient) => (
 
-            <tbody>
+              <PatientCard
+                key={patient.id}
+                patient={patient}
+              />
 
-              {patients.map((patient) => (
+            ))
 
-                <tr
-                  key={patient.id}
-                  className="border-b hover:bg-slate-50"
-                >
-
-                  <td className="p-3">{patient.id}</td>
-
-                  <td className="p-3">{patient.full_name}</td>
-
-                  <td className="p-3">{patient.email}</td>
-
-                  <td className="p-3">{patient.role}</td>
-                  <td className="p-3">
-                    <button
-                      onClick={() => router.push(`/doctor/patient/${patient.id}`)}
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
+          )}
 
         </div>
 
       </div>
 
-    </div>
+    </DashboardLayout>
   );
 }
