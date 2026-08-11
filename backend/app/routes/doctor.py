@@ -170,3 +170,28 @@ def doctor_summary(
         "total_reports": total_reports,
         "high_risk_patients": high_risk
     }
+
+@router.get("/profile")
+def doctor_profile(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    verify_doctor(current_user)
+
+    doctor = db.query(User).filter(
+        User.email == current_user["sub"]
+    ).first()
+
+    if not doctor:
+        raise HTTPException(
+            status_code=404,
+            detail="Doctor not found"
+        )
+
+    return {
+        "id": doctor.id,
+        "full_name": doctor.full_name,
+        "email": doctor.email,
+        "role": doctor.role,
+        "created_at": doctor.created_at,
+    }

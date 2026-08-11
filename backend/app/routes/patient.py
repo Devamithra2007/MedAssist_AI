@@ -70,7 +70,6 @@ def create_profile(
 
     return new_profile
 
-
 @router.get(
     "/profile",
     response_model=PatientProfileResponse
@@ -79,7 +78,6 @@ def get_profile(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-
     user = db.query(User).filter(
         User.email == current_user["sub"]
     ).first()
@@ -94,37 +92,40 @@ def get_profile(
         PatientProfile.user_id == user.id
     ).first()
 
+    # If profile does not exist, create one automatically
     if not profile:
-        raise HTTPException(
-            status_code=404,
-            detail="Profile not found"
+        profile = PatientProfile(
+            user_id=user.id
         )
 
+        db.add(profile)
+        db.commit()
+        db.refresh(profile)
+
     return {
-    "id": profile.id,
-    "user_id": profile.user_id,
+        "id": profile.id,
+        "user_id": profile.user_id,
 
-    "full_name": user.full_name,
-    "email": user.email,
-    "role": user.role,
+        "full_name": user.full_name,
+        "email": user.email,
+        "role": user.role,
 
-    "phone": profile.phone,
-    "date_of_birth": profile.date_of_birth,
-    "gender": profile.gender,
-    "blood_group": profile.blood_group,
+        "phone": profile.phone,
+        "date_of_birth": profile.date_of_birth,
+        "gender": profile.gender,
+        "blood_group": profile.blood_group,
 
-    "height": profile.height,
-    "weight": profile.weight,
+        "height": profile.height,
+        "weight": profile.weight,
 
-    "address": profile.address,
+        "address": profile.address,
 
-    "emergency_contact": profile.emergency_contact,
+        "emergency_contact": profile.emergency_contact,
 
-    "allergies": profile.allergies,
+        "allergies": profile.allergies,
 
-    "medical_history": profile.medical_history,
-}
-
+        "medical_history": profile.medical_history,
+    }
 
 @router.put(
     "/profile",
@@ -135,7 +136,6 @@ def update_profile(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-
     user = db.query(User).filter(
         User.email == current_user["sub"]
     ).first()
@@ -150,41 +150,52 @@ def update_profile(
         PatientProfile.user_id == user.id
     ).first()
 
+    # Create profile automatically if missing
     if not profile:
-        raise HTTPException(
-            status_code=404,
-            detail="Profile not found"
+        profile = PatientProfile(
+            user_id=user.id
         )
 
-    update_data = profile_data.model_dump(exclude_unset=True)
+        db.add(profile)
 
+    update_data = profile_data.model_dump(
+        exclude_unset=True
+    )
+
+    # Update User table
+    if "full_name" in update_data:
+        user.full_name = update_data.pop("full_name")
+
+    # Update PatientProfile table
     for key, value in update_data.items():
         setattr(profile, key, value)
 
     db.commit()
+
+    db.refresh(user)
     db.refresh(profile)
 
     return {
-    "id": profile.id,
-    "user_id": profile.user_id,
+        "id": profile.id,
+        "user_id": profile.user_id,
 
-    "full_name": user.full_name,
-    "email": user.email,
-    "role": user.role,
+        "full_name": user.full_name,
+        "email": user.email,
+        "role": user.role,
 
-    "phone": profile.phone,
-    "date_of_birth": profile.date_of_birth,
-    "gender": profile.gender,
-    "blood_group": profile.blood_group,
+        "phone": profile.phone,
+        "date_of_birth": profile.date_of_birth,
+        "gender": profile.gender,
+        "blood_group": profile.blood_group,
 
-    "height": profile.height,
-    "weight": profile.weight,
+        "height": profile.height,
+        "weight": profile.weight,
 
-    "address": profile.address,
+        "address": profile.address,
 
-    "emergency_contact": profile.emergency_contact,
+        "emergency_contact": profile.emergency_contact,
 
-    "allergies": profile.allergies,
+        "allergies": profile.allergies,
 
-    "medical_history": profile.medical_history,
-}
+        "medical_history": profile.medical_history,
+    }

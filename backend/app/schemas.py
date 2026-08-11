@@ -57,20 +57,19 @@ class PatientProfileCreate(PatientProfileBase):
 
 
 class PatientProfileUpdate(PatientProfileBase):
-    pass
+    full_name: Optional[str] = None
 
 
 class PatientProfileResponse(PatientProfileBase):
     id: int
     user_id: int
-
     full_name: str
     email: EmailStr
     role: str
 
     class Config:
         from_attributes = True
-
+        
 class SymptomBase(BaseModel):
     fever: str | None = None
     cough: str | None = None
@@ -151,4 +150,17 @@ class AdminDashboardResponse(BaseModel):
     total_doctors: int
     total_patients: int
     total_predictions: int
-    total_assignments: int
+    total_assignments: int# ======================================================
+# AI Prediction Request / Response
+# ======================================================
+
+class AIPredictionRequest(BaseModel):
+    symptoms: list[str]
+
+
+class AIPredictionResponse(BaseModel):
+    disease: str
+    confidence: float
+    description: str
+    precautions: list[str]
+

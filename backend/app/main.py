@@ -40,6 +40,7 @@ app.include_router(doctor.router)
 app.include_router(admin.router)
 
 
+
 @app.get("/")
 def home():
     return {

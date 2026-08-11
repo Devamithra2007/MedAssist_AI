@@ -39,3 +39,8 @@ export const getPatientPredictions = async (
 
   return response.data;
 };
+
+export const getDoctorProfile = async () => {
+  const response = await api.get("/doctor/profile");
+  return response.data;
+};

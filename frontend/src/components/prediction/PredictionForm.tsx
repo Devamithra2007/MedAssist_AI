@@ -1,12 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import {
-  createPrediction,
-  updatePrediction,
-  PredictionData,
-} from "@/services/prediction";
+import { predictDisease } from "@/services/prediction";
 
 interface Props {
   refreshTable: () => void;
@@ -14,132 +10,275 @@ interface Props {
   setEditingPrediction: (prediction: any) => void;
 }
 
-const initialForm: PredictionData = {
-  predicted_disease: "",
-  confidence_score: 0,
-  risk_level: "",
-  recommendation: "",
-};
-
 export default function PredictionForm({
   refreshTable,
   editingPrediction,
   setEditingPrediction,
 }: Props) {
-  const [formData, setFormData] = useState<PredictionData>(initialForm);
+  const [symptoms, setSymptoms] = useState<string[]>([]);
+  const [symptomInput, setSymptomInput] = useState("");
 
-  useEffect(() => {
-    if (editingPrediction) {
-      setFormData({
-        predicted_disease: editingPrediction.predicted_disease || "",
-        confidence_score: editingPrediction.confidence_score || 0,
-        risk_level: editingPrediction.risk_level || "",
-        recommendation: editingPrediction.recommendation || "",
-      });
-    } else {
-      setFormData(initialForm);
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  const addSymptom = () => {
+    const symptom = symptomInput.trim().toLowerCase();
+
+    if (!symptom) {
+      return;
     }
-  }, [editingPrediction]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]:
-        e.target.name === "confidence_score"
-          ? Number(e.target.value)
-          : e.target.value,
-    }));
+    if (symptoms.includes(symptom)) {
+      toast.error("Symptom already added");
+      return;
+    }
+
+    setSymptoms((prev) => [...prev, symptom]);
+    setSymptomInput("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const removeSymptom = (symptom: string) => {
+    setSymptoms((prev) =>
+      prev.filter((item) => item !== symptom)
+    );
+  };
+
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
 
-    try {
-      if (editingPrediction) {
-        await updatePrediction(editingPrediction.id, formData);
-        toast.success("Prediction updated successfully");
-      } else {
-        await createPrediction(formData);
-        toast.success("Prediction created successfully");
-      }
+    if (symptoms.length === 0) {
+      toast.error("Please add at least one symptom");
+      return;
+    }
 
-      setFormData(initialForm);
-      setEditingPrediction(null);
+    try {
+      setLoading(true);
+
+      const response = await predictDisease({
+        symptoms,
+      });
+
+      setResult(response);
+
+      toast.success(
+        "AI prediction generated successfully"
+      );
+
       refreshTable();
     } catch (error) {
       console.error(error);
-      toast.error("Operation failed");
+
+      toast.error(
+        "Unable to generate AI prediction"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
+  const resetForm = () => {
+    setSymptoms([]);
+    setSymptomInput("");
+    setResult(null);
+    setEditingPrediction(null);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8">
-      <h2 className="text-3xl font-bold text-blue-700 mb-6">
-        {editingPrediction ? "Update Prediction" : "Create Prediction"}
-      </h2>
+    <div className="rounded-2xl bg-white p-6 shadow-md">
+
+      {/* Header */}
+
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-gray-800">
+          🧠 AI Disease Prediction
+        </h2>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Enter your symptoms and let MedAssist AI
+          predict the possible disease.
+        </p>
+      </div>
+
+      {/* Symptom Input */}
 
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 gap-5"
+        className="space-y-5"
       >
-        <input
-          name="predicted_disease"
-          placeholder="Predicted Disease"
-          value={formData.predicted_disease}
-          onChange={handleChange}
-          className="border rounded-lg p-3"
-        />
 
-        <input
-          type="number"
-          name="confidence_score"
-          placeholder="Confidence Score"
-          value={formData.confidence_score}
-          onChange={handleChange}
-          className="border rounded-lg p-3"
-        />
+        <div>
+          <label className="mb-2 block text-sm font-medium text-gray-700">
+            Enter Symptom
+          </label>
 
-        <input
-          name="risk_level"
-          placeholder="Risk Level"
-          value={formData.risk_level}
-          onChange={handleChange}
-          className="border rounded-lg p-3"
-        />
+          <div className="flex gap-3">
 
-        <textarea
-          name="recommendation"
-          placeholder="Recommendation"
-          value={formData.recommendation}
-          onChange={handleChange}
-          className="border rounded-lg p-3"
-          rows={4}
-        />
+            <input
+              type="text"
+              value={symptomInput}
+              onChange={(e) =>
+                setSymptomInput(e.target.value)
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addSymptom();
+                }
+              }}
+              placeholder="Example: itching"
+              className="flex-1 rounded-lg border border-gray-300 p-3 outline-none focus:border-blue-500"
+            />
 
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
-          >
-            {editingPrediction ? "Update Prediction" : "Save Prediction"}
-          </button>
-
-          {editingPrediction && (
             <button
               type="button"
-              onClick={() => {
-                setEditingPrediction(null);
-                setFormData(initialForm);
-              }}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg"
+              onClick={addSymptom}
+              className="rounded-lg bg-blue-600 px-5 py-3 text-white hover:bg-blue-700"
             >
-              Cancel
+              Add
             </button>
-          )}
+
+          </div>
         </div>
+
+        {/* Selected Symptoms */}
+
+        {symptoms.length > 0 && (
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-700">
+              Selected Symptoms
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+
+              {symptoms.map((symptom) => (
+                <div
+                  key={symptom}
+                  className="flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm text-blue-800"
+                >
+                  <span>{symptom}</span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeSymptom(symptom)
+                    }
+                    className="font-bold text-blue-600 hover:text-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+
+            </div>
+          </div>
+        )}
+
+        {/* Predict Button */}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading
+            ? "Analyzing Symptoms..."
+            : "🔮 Predict Disease"}
+        </button>
+
       </form>
+
+      {/* AI Result */}
+
+      {result && (
+        <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-6">
+
+          <div className="mb-5">
+            <h3 className="text-xl font-bold text-gray-800">
+              🧠 AI Prediction Result
+            </h3>
+
+            <p className="text-sm text-gray-500">
+              Prediction generated by MedAssist AI
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+            {/* Disease */}
+
+            <div className="rounded-xl bg-white p-5 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Predicted Disease
+              </p>
+
+              <h4 className="mt-2 text-xl font-bold text-gray-800">
+                {result.disease}
+              </h4>
+            </div>
+
+            {/* Confidence */}
+
+            <div className="rounded-xl bg-white p-5 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Confidence
+              </p>
+
+              <h4 className="mt-2 text-xl font-bold text-blue-600">
+                {result.confidence}%
+              </h4>
+            </div>
+
+            {/* Risk */}
+
+            <div className="rounded-xl bg-white p-5 shadow-sm">
+              <p className="text-sm text-gray-500">
+                Risk Level
+              </p>
+
+              <h4
+                className={`mt-2 text-xl font-bold ${
+                  result.risk_level === "High"
+                    ? "text-red-600"
+                    : result.risk_level === "Medium"
+                    ? "text-yellow-600"
+                    : "text-green-600"
+                }`}
+              >
+                {result.risk_level}
+              </h4>
+            </div>
+
+          </div>
+
+          {/* Recommendation */}
+
+          <div className="mt-4 rounded-xl bg-white p-5 shadow-sm">
+
+            <p className="text-sm font-medium text-gray-500">
+              Recommendation
+            </p>
+
+            <p className="mt-2 text-gray-700">
+              {result.recommendation}
+            </p>
+
+          </div>
+
+          {/* Reset */}
+
+          <button
+            type="button"
+            onClick={resetForm}
+            className="mt-5 rounded-lg bg-gray-600 px-5 py-3 text-white hover:bg-gray-700"
+          >
+            New Prediction
+          </button>
+
+        </div>
+      )}
+
     </div>
   );
 }

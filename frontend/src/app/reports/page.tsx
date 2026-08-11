@@ -31,16 +31,15 @@ export default function ReportsPage() {
   }
 
   const profile = report?.profile;
-  const symptom =
-    report?.symptoms?.length > 0
-      ? report.symptoms[report.symptoms.length - 1]
-      : null;
+const symptom =
+  report?.symptoms?.length > 0
+    ? report.symptoms[0]
+    : null;
 
-  const prediction =
-    report?.predictions?.length > 0
-      ? report.predictions[report.predictions.length - 1]
-      : null;
-
+const prediction =
+  report?.predictions?.length > 0
+    ? report.predictions[0]
+    : null;
   return (
     <div className="min-h-screen bg-slate-100 p-8">
       <div className="max-w-7xl mx-auto">
@@ -64,14 +63,14 @@ export default function ReportsPage() {
 
                 <p><strong>Name:</strong> {profile.full_name}</p>
 
-                <p><strong>Age:</strong> {profile.age}</p>
-
+<p><strong>Date of Birth:</strong>{" "}
+  {profile.date_of_birth || "Not provided"}
+</p>
                 <p><strong>Gender:</strong> {profile.gender}</p>
 
                 <p><strong>Blood Group:</strong> {profile.blood_group}</p>
 
-                <p><strong>Phone:</strong> {profile.phone_number}</p>
-
+                <p><strong>Phone:</strong> {profile.phone}</p>
                 <p><strong>Address:</strong> {profile.address}</p>
 
               </div>
@@ -142,7 +141,7 @@ export default function ReportsPage() {
 
                 <p>
                   <strong>Confidence:</strong>{" "}
-                  {prediction.confidence_score}%
+                 {prediction.confidence}%
                 </p>
 
                 <p>

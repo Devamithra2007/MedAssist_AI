@@ -52,12 +52,12 @@ export const doctorNavigation = [
   },
   {
     name: "Reports",
-    href: "/reports",
+    href: "/doctor/reports",
     icon: FileText,
   },
   {
     name: "Profile",
-    href: "/profile",
+    href: "/doctor/profile",
     icon: User,
   },
 ];

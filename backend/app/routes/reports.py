@@ -67,20 +67,57 @@ def summary_report(
         User.email == current_user["sub"]
     ).first()
 
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
     profile = db.query(PatientProfile).filter(
         PatientProfile.user_id == user.id
     ).first()
 
-    symptoms = db.query(Symptom).filter(
-        Symptom.patient_id == user.id
-    ).all()
+    symptoms = (
+        db.query(Symptom)
+        .filter(Symptom.patient_id == user.id)
+        .order_by(Symptom.created_at.desc())
+        .all()
+    )
 
-    predictions = db.query(Prediction).filter(
-        Prediction.patient_id == user.id
-    ).all()
+    predictions = (
+        db.query(Prediction)
+        .filter(Prediction.patient_id == user.id)
+        .order_by(Prediction.created_at.desc())
+        .all()
+    )
+
+    profile_data = None
+
+    if profile:
+        profile_data = {
+            "id": profile.id,
+            "user_id": profile.user_id,
+
+            # User table data
+            "full_name": user.full_name,
+            "email": user.email,
+            "role": user.role,
+
+            # Patient profile data
+            "phone": profile.phone,
+            "date_of_birth": profile.date_of_birth,
+            "gender": profile.gender,
+            "blood_group": profile.blood_group,
+            "height": profile.height,
+            "weight": profile.weight,
+            "address": profile.address,
+            "emergency_contact": profile.emergency_contact,
+            "allergies": profile.allergies,
+            "medical_history": profile.medical_history,
+        }
 
     return {
-        "profile": profile,
+        "profile": profile_data,
         "symptoms": symptoms,
-        "predictions": predictions
+        "predictions": predictions,
     }

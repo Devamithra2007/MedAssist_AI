@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from pydantic import BaseModel
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models import (
@@ -21,8 +21,13 @@ router = APIRouter(
     prefix="/admin",
     tags=["Admin"]
 )
+class AdminProfileUpdate(BaseModel):
+    full_name: str
+    email: str
 
-
+class AdminPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str
 # ===================================================
 # Verify Admin
 # ===================================================
@@ -294,3 +299,121 @@ def delete_assignment(
     return {
         "message": "Assignment deleted successfully"
     }                                           
+
+# ===================================================
+# Admin Profile
+# ===================================================
+
+@router.get("/profile")
+def get_admin_profile(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    verify_admin(current_user)
+
+    admin = db.query(User).filter(
+        User.email == current_user["sub"]
+    ).first()
+
+    if not admin:
+        raise HTTPException(
+            status_code=404,
+            detail="Admin not found"
+        )
+
+    return {
+        "id": admin.id,
+        "full_name": admin.full_name,
+        "email": admin.email,
+        "role": admin.role,
+    }
+
+
+@router.put("/profile")
+def update_admin_profile(
+    profile_data: AdminProfileUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    verify_admin(current_user)
+
+    admin = db.query(User).filter(
+        User.email == current_user["sub"]
+    ).first()
+
+    if not admin:
+        raise HTTPException(
+            status_code=404,
+            detail="Admin not found"
+        )
+
+    # Check whether another user already uses this email
+    existing_user = db.query(User).filter(
+        User.email == profile_data.email,
+        User.id != admin.id
+    ).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
+
+    admin.full_name = profile_data.full_name
+    admin.email = profile_data.email
+
+    db.commit()
+    db.refresh(admin)
+
+    return {
+        "message": "Admin profile updated successfully",
+        "id": admin.id,
+        "full_name": admin.full_name,
+        "email": admin.email,
+        "role": admin.role,
+    }
+@router.put("/change-password")
+def change_admin_password(
+    password_data: AdminPasswordUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    verify_admin(current_user)
+
+    admin = db.query(User).filter(
+        User.email == current_user["sub"]
+    ).first()
+
+    if not admin:
+        raise HTTPException(
+            status_code=404,
+            detail="Admin not found"
+        )
+
+    # Verify current password
+    from app.security import verify_password
+
+    if not verify_password(
+        password_data.current_password,
+        admin.password
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Current password is incorrect"
+        )
+
+    if len(password_data.new_password) < 6:
+        raise HTTPException(
+            status_code=400,
+            detail="New password must be at least 6 characters"
+        )
+
+    admin.password = hash_password(
+        password_data.new_password
+    )
+
+    db.commit()
+    db.refresh(admin)
+    return {
+        "message": "Password changed successfully"
+    }
