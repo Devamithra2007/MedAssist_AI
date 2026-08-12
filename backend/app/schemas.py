@@ -125,10 +125,10 @@ class PredictionUpdate(BaseModel):
 class PredictionResponse(PredictionBase):
     id: int
     patient_id: int
+    symptoms: list[str] = []
 
     class Config:
         from_attributes = True
-
 # -------------------------
 # Doctor Patient Assignment
 # -------------------------
@@ -157,6 +157,8 @@ class AdminDashboardResponse(BaseModel):
 class AIPredictionRequest(BaseModel):
     symptoms: list[str]
 
+class AIPredictionUpdateRequest(BaseModel):
+    symptoms: list[str]
 
 class AIPredictionResponse(BaseModel):
     disease: str
