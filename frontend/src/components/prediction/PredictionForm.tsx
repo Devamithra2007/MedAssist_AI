@@ -88,23 +88,42 @@ export default function PredictionForm({
       Show the existing prediction while editing.
     */
 
-    setResult({
-      disease:
-        editingPrediction.predicted_disease,
+    const confidence =
+  Number(editingPrediction.confidence) || 0;
 
-      confidence:
-        Number(
-          editingPrediction.confidence
-        ) || 0,
+const confidenceLevel =
+  confidence >= 90
+    ? "High"
+    : confidence >= 70
+    ? "Medium"
+    : "Low";
 
-      confidence_level:
-        editingPrediction.risk_level,
+setResult({
+  disease:
+    editingPrediction.predicted_disease,
 
-      recommendation:
-        editingPrediction.recommendation,
+  confidence,
 
-      top_predictions: [],
-    });
+  confidence_level:
+    confidenceLevel,
+
+  risk_score:
+    editingPrediction.risk_score,
+
+  risk_level:
+    editingPrediction.risk_level,
+
+  severity_score:
+    editingPrediction.severity_score,
+
+  severity_level:
+    editingPrediction.severity_level,
+
+  recommendation:
+    editingPrediction.recommendation,
+
+  top_predictions: [],
+});
 
   }, [
     editingPrediction,
@@ -769,20 +788,148 @@ export default function PredictionForm({
 
 
           {/* ================================================= */}
-          {/* RECOMMENDATION */}
-          {/* ================================================= */}
+{/* MILESTONE 3 RECOMMENDATIONS */}
+{/* ================================================= */}
 
-          <div className="mt-5 rounded-xl bg-white p-5 shadow-sm">
+<div className="mt-5 space-y-4">
 
-            <p className="text-sm font-medium text-gray-500">
-              💡 Recommendation
-            </p>
+  {/* Treatment Suggestions */}
 
-            <p className="mt-2 text-gray-700">
-              {result.recommendation}
-            </p>
+  {result.recommendations?.treatment_suggestions?.length > 0 && (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
 
-          </div>
+      <p className="text-sm font-semibold text-indigo-700">
+        💊 Treatment Suggestions
+      </p>
+
+      <ul className="mt-3 space-y-2">
+        {result.recommendations.treatment_suggestions.map(
+          (item: string, index: number) => (
+            <li
+              key={index}
+              className="flex gap-2 text-sm text-gray-700"
+            >
+              <span className="font-bold text-indigo-600">
+                •
+              </span>
+
+              <span>{item}</span>
+            </li>
+          )
+        )}
+      </ul>
+
+    </div>
+  )}
+
+
+  {/* Preventive Advice */}
+
+  {result.recommendations?.preventive_advice?.length > 0 && (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+
+      <p className="text-sm font-semibold text-green-700">
+        🛡️ Preventive Advice
+      </p>
+
+      <ul className="mt-3 space-y-2">
+        {result.recommendations.preventive_advice.map(
+          (item: string, index: number) => (
+            <li
+              key={index}
+              className="flex gap-2 text-sm text-gray-700"
+            >
+              <span className="font-bold text-green-600">
+                •
+              </span>
+
+              <span>{item}</span>
+            </li>
+          )
+        )}
+      </ul>
+
+    </div>
+  )}
+
+
+  {/* Lifestyle Advice */}
+
+  {result.recommendations?.lifestyle_advice?.length > 0 && (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+
+      <p className="text-sm font-semibold text-blue-700">
+        🏃 Lifestyle Advice
+      </p>
+
+      <ul className="mt-3 space-y-2">
+        {result.recommendations.lifestyle_advice.map(
+          (item: string, index: number) => (
+            <li
+              key={index}
+              className="flex gap-2 text-sm text-gray-700"
+            >
+              <span className="font-bold text-blue-600">
+                •
+              </span>
+
+              <span>{item}</span>
+            </li>
+          )
+        )}
+      </ul>
+
+    </div>
+  )}
+
+
+  {/* Warning Signs */}
+
+  {result.recommendations?.warning_signs?.length > 0 && (
+    <div className="rounded-xl border border-red-200 bg-red-50 p-5">
+
+      <p className="text-sm font-semibold text-red-700">
+        ⚠️ Warning Signs
+      </p>
+
+      <ul className="mt-3 space-y-2">
+        {result.recommendations.warning_signs.map(
+          (item: string, index: number) => (
+            <li
+              key={index}
+              className="flex gap-2 text-sm text-red-700"
+            >
+              <span className="font-bold">
+                •
+              </span>
+
+              <span>{item}</span>
+            </li>
+          )
+        )}
+      </ul>
+
+    </div>
+  )}
+
+
+  {/* Advisory */}
+
+  {result.recommendations?.advisory && (
+    <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-5">
+
+      <p className="text-sm font-semibold text-indigo-800">
+        💡 Medical Advisory
+      </p>
+
+      <p className="mt-2 text-sm leading-6 text-indigo-700">
+        {result.recommendations.advisory}
+      </p>
+
+    </div>
+  )}
+
+</div>
 
 
           {/* ================================================= */}
