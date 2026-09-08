@@ -437,18 +437,15 @@ export default function DoctorAnalyticsPage() {
                         ? "Risk Score"
                         : "Severity Score",
                     ]}
-                    labelFormatter={(
-                      label: any,
-                      payload: any[]
-                    ) => {
-                      const item = payload?.[0]?.payload;
+                    labelFormatter={(label, payload) => {
+  const item = payload?.[0]?.payload as any;
 
-                      if (item?.disease) {
-                        return `${label} - ${item.disease}`;
-                      }
+  if (item?.disease) {
+    return `${label} - ${item.disease}`;
+  }
 
-                      return label;
-                    }}
+  return label;
+}}
                   />
 
                   <Legend />
