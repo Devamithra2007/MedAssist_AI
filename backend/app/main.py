@@ -43,6 +43,7 @@ app.add_middleware(
 
     allow_origins=[
         "http://localhost:3000",
+        "https://med-assist-ai-omega.vercel.app",
     ],
 
     allow_credentials=True,
